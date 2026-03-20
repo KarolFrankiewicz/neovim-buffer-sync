@@ -1,0 +1,118 @@
+{
+  "name": "nvim-buffer-sync",
+  "displayName": "Neovim Buffer Sync",
+  "description": "Synchronize opened tabs and buffers between Neovim (running in integrated terminal) and VS Code",
+  "version": "0.1.0",
+  "publisher": "karolfrankiewicz",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KarolFrankiewicz/neovim-buffer-sync"
+  },
+  "homepage": "https://github.com/KarolFrankiewicz/neovim-buffer-sync#readme",
+  "bugs": {
+    "url": "https://github.com/KarolFrankiewicz/neovim-buffer-sync/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:nvimBufferSync.connect",
+    "onCommand:nvimBufferSync.disconnect",
+    "onCommand:nvimBufferSync.showStatus"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "nvimBufferSync.connect",
+        "title": "Neovim Buffer Sync: Connect to Neovim"
+      },
+      {
+        "command": "nvimBufferSync.disconnect",
+        "title": "Neovim Buffer Sync: Disconnect from Neovim"
+      },
+      {
+        "command": "nvimBufferSync.showStatus",
+        "title": "Neovim Buffer Sync: Show Connection Status"
+      }
+    ],
+    "configuration": {
+      "title": "Neovim Buffer Sync",
+      "properties": {
+        "nvimBufferSync.socketPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to Neovim's listen socket. If empty, auto-discovers common socket paths (fixed /tmp names, NVIM_LISTEN_ADDRESS, /tmp/nvim…/0)."
+        },
+        "nvimBufferSync.autoConnect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Retry connecting on an interval and when a new integrated terminal opens (socket discovery; does not inspect terminal contents)."
+        },
+        "nvimBufferSync.syncVscodeToNvim": {
+          "type": "boolean",
+          "default": true,
+          "description": "When a file is opened in VS Code, also open it in Neovim's buffer list."
+        },
+        "nvimBufferSync.syncNvimToVscode": {
+          "type": "boolean",
+          "default": true,
+          "description": "When a buffer is opened in Neovim, also open it in VS Code."
+        },
+        "nvimBufferSync.openBehavior": {
+          "type": "string",
+          "enum": [
+            "background",
+            "preview",
+            "active"
+          ],
+          "default": "background",
+          "description": "How to open files in VS Code when synced from Neovim. 'background' opens a persistent (non-preview) tab and keeps focus in the terminal. 'preview' uses a single preview tab that the next open can replace. 'active' opens a persistent tab and switches focus to the editor."
+        },
+        "nvimBufferSync.ignoredPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "term://",
+            "fugitive://",
+            "health://",
+            "man://"
+          ],
+          "description": "Substring patterns; paths containing any entry are skipped for sync in both directions."
+        },
+        "nvimBufferSync.syncDiffAndReviewTabs": {
+          "type": "boolean",
+          "default": true,
+          "description": "When a diff/review tab is open in VS Code, add the underlying file: paths to Neovim (TabInputTextDiff modified/original; TabInputCustom with a file URI)."
+        },
+        "nvimBufferSync.closePreviewBuffersInNvim": {
+          "type": "boolean",
+          "default": true,
+          "description": "When openBehavior is 'preview' and Nvim→VS Code replaces the preview tab, remove the previous file's Neovim buffer if safe. (Closing the last VS Code tab for a file opened from VS Code also attempts safe removal regardless of this flag.)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run check && npm run compile",
+    "check": "tsc --noEmit -p ./",
+    "compile": "node -e \"require('fs').rmSync('out',{recursive:true,force:true})\" && esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --platform=node --format=cjs --minify --alias:winston=./scripts/winston-stub.cjs",
+    "watch": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --platform=node --format=cjs --sourcemap --watch --alias:winston=./scripts/winston-stub.cjs",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.25.12",
+    "neovim": "^5.3.0",
+    "typescript": "^5.3.0"
+  }
+}
